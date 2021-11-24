@@ -5,12 +5,15 @@ set(CMAKE_CXX_STANDARD 17)
 
 find_package(SDL2 REQUIRED)
 
+add_subdirectory(metal-cpp)
+
 add_executable(sdl-metal main.cpp)
 
 target_include_directories(
     sdl-metal
-    PRIVATE "${SDL2_INCLUDE_DIRS}")
+    PRIVATE "${SDL2_INCLUDE_DIRS}"
+            "${CMAKE_SOURCE_DIR}/metal-cpp")
 
 target_link_libraries(
     sdl-metal
-    PRIVATE "${SDL2_LIBRARIES}")
+    PRIVATE "${SDL2_LIBRARIES}" MetalCPP "-framework Metal" "-framework QuartzCore" "-framework Foundation")
