@@ -2,6 +2,7 @@
 
 #include <Foundation/Foundation.hpp>
 #include <Metal/Metal.hpp>
+#include <Metal/shared_ptr.hpp>
 #include <QuartzCore/QuartzCore.hpp>
 
 #include <SDL.h>
@@ -49,7 +50,7 @@ main(int argc, char **argv) {
         dispatch_get_main_queue(),
         ^{ });
 
-    auto library = device->newLibrary(library_data, &err);
+    auto library = MTL::make_owned(device->newLibrary(library_data, &err));
 
     if (!library) {
         std::cerr << "Failed to create library" << std::endl;
@@ -57,33 +58,26 @@ main(int argc, char **argv) {
     }
 
     auto vertex_function_name = NS::String::string("vertexShader", NS::ASCIIStringEncoding);
-    auto vertex_function = library->newFunction(vertex_function_name);
-    vertex_function_name->release();
+    auto vertex_function = MTL::make_owned(library->newFunction(vertex_function_name));
 
     auto fragment_function_name = NS::String::string("fragmentShader", NS::ASCIIStringEncoding);
-    auto fragment_function = library->newFunction(fragment_function_name);
-    fragment_function_name->release();
+    auto fragment_function = MTL::make_owned(library->newFunction(fragment_function_name));
 
-    auto pipeline_descriptor = MTL::RenderPipelineDescriptor::alloc()->init();
-    pipeline_descriptor->setVertexFunction(vertex_function);
-    pipeline_descriptor->setFragmentFunction(fragment_function);
-
-    vertex_function->release();
-    fragment_function->release();
+    auto pipeline_descriptor = MTL::make_owned(MTL::RenderPipelineDescriptor::alloc()->init());
+    pipeline_descriptor->setVertexFunction(vertex_function.get());
+    pipeline_descriptor->setFragmentFunction(fragment_function.get());
 
     auto color_attachment_descriptor = pipeline_descriptor->colorAttachments()->object(0);
     color_attachment_descriptor->setPixelFormat(swapchain->pixelFormat());
 
-    auto pipeline = device->newRenderPipelineState(pipeline_descriptor, &err);
-
-    pipeline_descriptor->release();
+    auto pipeline = MTL::make_owned(device->newRenderPipelineState(pipeline_descriptor.get(), &err));
 
     if (!pipeline) {
         std::cerr << "Failed to create pipeline" << std::endl;
         std::exit(-1);
     }
 
-    auto queue = device->newCommandQueue();
+    auto queue = MTL::make_owned(device->newCommandQueue());
 
     bool quit = false;
     SDL_Event e;
@@ -99,7 +93,7 @@ main(int argc, char **argv) {
 
         auto drawable = swapchain->nextDrawable();
 
-        auto pass = MTL::RenderPassDescriptor::renderPassDescriptor();
+        auto pass = MTL::make_owned(MTL::RenderPassDescriptor::renderPassDescriptor());
 
         auto color_attachment = pass->colorAttachments()->object(0);
         color_attachment->setLoadAction(MTL::LoadAction::LoadActionClear);
@@ -107,10 +101,10 @@ main(int argc, char **argv) {
         color_attachment->setTexture(drawable->texture());
 
         //
-        auto buffer = queue->commandBuffer();
+        auto buffer = MTL::make_owned(queue->commandBuffer());
 
         //
-        auto encoder = buffer->renderCommandEncoder(pass);
+        auto encoder = MTL::make_owned(buffer->renderCommandEncoder(pass.get()));
 
         encoder->setViewport(MTL::Viewport {
             0.0f, 0.0f,
@@ -118,7 +112,7 @@ main(int argc, char **argv) {
             0.0f, 1.0f
          });
 
-        encoder->setRenderPipelineState(pipeline);
+        encoder->setRenderPipelineState(pipeline.get());
 
         encoder->setVertexBytes(&triangleVertices[0], sizeof(triangleVertices), AAPLVertexInputIndexVertices);
         encoder->setVertexBytes(&viewport, sizeof(viewport), AAPLVertexInputIndexViewportSize);
@@ -127,21 +121,12 @@ main(int argc, char **argv) {
         encoder->drawPrimitives(MTL::PrimitiveType::PrimitiveTypeTriangle, vertex_start, vertex_count);
 
         encoder->endEncoding();
-        encoder->release();
 
         buffer->presentDrawable(drawable);
         buffer->commit();
 
-        buffer->release();
-
-        pass->release();
-
         drawable->release();
     }
-
-    pipeline->release();
-
-    queue->release();
 
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
