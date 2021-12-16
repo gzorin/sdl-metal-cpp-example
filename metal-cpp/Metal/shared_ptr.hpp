@@ -1,5 +1,6 @@
 #pragma once
 
+#include <functional>
 #include <type_traits>
 
 namespace MTL {
@@ -47,7 +48,7 @@ public:
         other.d_ptr = nullptr;
     }
 
-    shared_ptr(nullptr_t) : d_ptr(nullptr) {
+    shared_ptr(std::nullptr_t) : d_ptr(nullptr) {
     }
 
     ~shared_ptr() {
@@ -95,7 +96,7 @@ public:
         return d_ptr;
     }
 
-    typename std::add_lvalue_reference<T>::type& operator*() const noexcept {
+    typename std::add_lvalue_reference<element_type>::type operator*() const noexcept {
         return *d_ptr;
     }
 
@@ -128,6 +129,8 @@ protected:
 
     element_type *d_ptr;
 
+    template<typename Y> friend class shared_ptr;
+
     friend shared_ptr MTL::make_owned(T *);
 };
 
@@ -141,4 +144,104 @@ MTL::make_owned(T *that) {
     shared_ptr<T> result;
     result.d_ptr = that;
     return result;
+}
+
+template<typename X, typename Y>
+bool operator==(const MTL::shared_ptr<X>& lhs, const MTL::shared_ptr<Y>& rhs) {
+    return lhs.get() == rhs.get();
+}
+
+template<typename X, typename Y>
+bool operator!=(const MTL::shared_ptr<X>& lhs, const MTL::shared_ptr<Y>& rhs) {
+    return !(lhs == rhs);
+}
+
+template<typename X, typename Y>
+bool operator<(const MTL::shared_ptr<X>& lhs, const MTL::shared_ptr<Y>& rhs) {
+    return std::less<>()(lhs.get(), rhs.get());
+}
+
+template<typename X, typename Y>
+bool operator>(const MTL::shared_ptr<X>& lhs, const MTL::shared_ptr<Y>& rhs) {
+    return rhs < lhs;
+}
+
+template<typename X, typename Y>
+bool operator<=(const MTL::shared_ptr<X>& lhs, const MTL::shared_ptr<Y>& rhs) {
+    return !(rhs < lhs);
+}
+
+template<typename X, typename Y>
+bool operator>=(const MTL::shared_ptr<X>& lhs, const MTL::shared_ptr<Y>& rhs) {
+    return !(lhs < rhs);
+}
+
+template<typename X>
+bool operator==(const MTL::shared_ptr<X>& lhs, std::nullptr_t) {
+    return !lhs;
+}
+
+template<typename X>
+bool operator==(std::nullptr_t, const MTL::shared_ptr<X>& rhs) {
+    return !rhs;
+}
+
+template<typename X>
+bool operator!=(const MTL::shared_ptr<X>& lhs, std::nullptr_t) {
+    return static_cast<bool>(lhs);
+}
+
+template<typename X>
+bool operator!=(std::nullptr_t, const MTL::shared_ptr<X>& rhs) {
+    return static_cast<bool>(rhs);
+}
+
+template<typename X>
+bool operator<(const MTL::shared_ptr<X>& lhs, std::nullptr_t) {
+    return std::less(lhs.get(), nullptr);
+}
+
+template<typename X>
+bool operator<(std::nullptr_t, const MTL::shared_ptr<X>& rhs) {
+    return std::less(nullptr, rhs.get());
+}
+
+template<typename X>
+bool operator>(const MTL::shared_ptr<X>& lhs, std::nullptr_t) {
+    return nullptr < lhs;
+}
+
+template<typename X>
+bool operator>(std::nullptr_t, const MTL::shared_ptr<X>& rhs) {
+    return rhs < nullptr;
+}
+
+template<typename X>
+bool operator<=(const MTL::shared_ptr<X>& lhs, std::nullptr_t) {
+    return !(nullptr < lhs);
+}
+
+template<typename X>
+bool operator<=(std::nullptr_t, const MTL::shared_ptr<X>& rhs) {
+    return !(rhs < nullptr);
+}
+
+template<typename X>
+bool operator>=(const MTL::shared_ptr<X>& lhs, std::nullptr_t) {
+    return !(lhs < nullptr);
+}
+
+template<typename X>
+bool operator>=(std::nullptr_t, const MTL::shared_ptr<X>& rhs) {
+    return !(nullptr < rhs);
+}
+
+namespace std {
+
+template<typename T>
+void
+swap(MTL::shared_ptr<T>& lhs, MTL::shared_ptr<T>& rhs) {
+    lhs.swap(rhs);
+}
+
 }
