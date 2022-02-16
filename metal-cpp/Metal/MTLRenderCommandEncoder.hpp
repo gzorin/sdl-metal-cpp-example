@@ -328,7 +328,7 @@ public:
 
     void         useResource(const class Resource* resource, MTL::ResourceUsage usage, MTL::RenderStages stages);
 
-    void         useResources(MTL::Resource* resources, NS::UInteger count, MTL::ResourceUsage usage, MTL::RenderStages stages);
+    void         useResources(MTL::Resource* resources[], NS::UInteger count, MTL::ResourceUsage usage, MTL::RenderStages stages);
 
     void         useHeap(const class Heap* heap);
 
@@ -898,7 +898,7 @@ _MTL_INLINE void MTL::RenderCommandEncoder::useResource(const MTL::Resource* res
 }
 
 // method: useResources:count:usage:stages:
-_MTL_INLINE void MTL::RenderCommandEncoder::useResources(MTL::Resource* resources, NS::UInteger count, MTL::ResourceUsage usage, MTL::RenderStages stages)
+_MTL_INLINE void MTL::RenderCommandEncoder::useResources(MTL::Resource* resources[], NS::UInteger count, MTL::ResourceUsage usage, MTL::RenderStages stages)
 {
     Object::sendMessage<void>(this, _MTL_PRIVATE_SEL(useResources_count_usage_stages_), resources, count, usage, stages);
 }
