@@ -5,9 +5,11 @@ a triangle. The project uses [SDL 2][2] to create the window.
 
 I've added a few things to Apple's C++ bindings:
 
-* [CAMetalLayer.hpp][3] provides a C++ binding for Core Animation's
+* ~~[CAMetalLayer.hpp][3] provides a C++ binding for Core Animation's
   [`CAMetalLayer`][7]. Note that [the included example][4] uses this extension, and
-  will therefore not work with the upstream version of 'metal-cpp'.
+  will therefore not work with the upstream version of 'metal-cpp'.~~
+
+  Apple has since added this.
 
 * [shared_ptr.hpp][5] is an implementation of the [standard C++ `shared_ptr`][6]
   that calls `retain()` and `release()` to manage the lifetime of the object.
@@ -17,6 +19,9 @@ I've added a few things to Apple's C++ bindings:
   newly-created `NSObject`, which presumably has its reference count set to 1,
   use the function `make_owned()`, which creates a new `shared_ptr` without
   increasing the object's reference count.
+
+  Apple has since added `NS::SharedPtr`, but I'm leaving mine in since it
+  resembles the standard C++ `shared_ptr`.
 
 [1]: https://developer.apple.com/metal/cpp/
 [2]: https://www.libsdl.org
