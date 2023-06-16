@@ -1,8 +1,8 @@
 //-------------------------------------------------------------------------------------------------------------------------------------------------------------
 //
-// QuartzCore/CAMetalLayer.hpp
+// QuartzCore/CAMetalDrawable.hpp
 //
-// Copyright 2021, 2022 Alex Betts
+// Copyright 2020-2023 Apple Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -22,23 +22,46 @@
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-#include "../Metal/MTLDevice.hpp"
+#include "../Metal/MTLPixelFormat.hpp"
+#include "../Metal/MTLTexture.hpp"
+#include <CoreGraphics/CGGeometry.h>
 
 #include "CADefines.hpp"
+#include "CAMetalDrawable.hpp"
 #include "CAPrivate.hpp"
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 namespace CA
 {
+
 class MetalLayer : public NS::Referencing<MetalLayer>
 {
 public:
-    MTL::Device*      device() const;
-    class MetalDrawable*    nextDrawable() const;
-    MTL::PixelFormat pixelFormat() const;
+    static class MetalLayer* layer();
+
+    MTL::Device*             device() const;
+    void                     setDevice(MTL::Device* device);
+
+    MTL::PixelFormat         pixelFormat() const;
+    void                     setPixelFormat(MTL::PixelFormat pixelFormat);
+
+    bool                     framebufferOnly() const;
+    void                     setFramebufferOnly(bool framebufferOnly);
+
+    CGSize                   drawableSize() const;
+    void                     setDrawableSize(CGSize drawableSize);
+
+    class MetalDrawable*     nextDrawable();
 };
+} // namespace CA
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------------------
+_CA_INLINE CA::MetalLayer* CA::MetalLayer::layer()
+{
+    return Object::sendMessage<CA::MetalLayer*>(_CA_PRIVATE_CLS(CAMetalLayer), _CA_PRIVATE_SEL(layer));
 }
+//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -46,15 +69,63 @@ _CA_INLINE MTL::Device* CA::MetalLayer::device() const
 {
     return Object::sendMessage<MTL::Device*>(this, _CA_PRIVATE_SEL(device));
 }
+//-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-_CA_INLINE CA::MetalDrawable* CA::MetalLayer::nextDrawable() const
+_CA_INLINE void CA::MetalLayer::setDevice(MTL::Device* device)
 {
-    return Object::sendMessage<MetalDrawable*>(this, _CA_PRIVATE_SEL(nextDrawable));
-}
-
-_CA_INLINE MTL::PixelFormat CA::MetalLayer::pixelFormat() const
-{
-    return Object::sendMessage<MTL::PixelFormat>(this, _CA_PRIVATE_SEL(pixelFormat));
+    return Object::sendMessage<void>(this, _CA_PRIVATE_SEL(setDevice_), device);
 }
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+_CA_INLINE MTL::PixelFormat CA::MetalLayer::pixelFormat() const
+{
+    return Object::sendMessage<MTL::PixelFormat>(this,
+        _CA_PRIVATE_SEL(pixelFormat));
+}
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+_CA_INLINE void CA::MetalLayer::setPixelFormat(MTL::PixelFormat pixelFormat)
+{
+    return Object::sendMessage<void>(this, _CA_PRIVATE_SEL(setPixelFormat_),
+        pixelFormat);
+}
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+_CA_INLINE bool CA::MetalLayer::framebufferOnly() const
+{
+    return Object::sendMessage<bool>(this, _CA_PRIVATE_SEL(framebufferOnly));
+}
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+_CA_INLINE void CA::MetalLayer::setFramebufferOnly(bool framebufferOnly)
+{
+    return Object::sendMessage<void>(this, _CA_PRIVATE_SEL(setFramebufferOnly_),
+        framebufferOnly);
+}
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+_CA_INLINE CGSize CA::MetalLayer::drawableSize() const
+{
+    return Object::sendMessage<CGSize>(this, _CA_PRIVATE_SEL(drawableSize));
+}
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+_CA_INLINE void CA::MetalLayer::setDrawableSize(CGSize drawableSize)
+{
+    return Object::sendMessage<void>(this, _CA_PRIVATE_SEL(setDrawableSize_),
+        drawableSize);
+}
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+_CA_INLINE CA::MetalDrawable* CA::MetalLayer::nextDrawable()
+{
+    return Object::sendMessage<MetalDrawable*>(this,
+        _CA_PRIVATE_SEL(nextDrawable));
+}
